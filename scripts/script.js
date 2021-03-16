@@ -71,5 +71,81 @@ document.addEventListener('DOMContentLoaded', () => {
         // }
     }
 
+    const accordion = () => {
+        // const characteristicsTitle = document.querySelectorAll('.characteristics__title')
+        // const characteristicsDescription = document.querySelectorAll('.characteristics__description')
+
+        // characteristicsTitle.forEach((elem, i) => {
+        //     elem.addEventListener('click', () => {
+        //         elem.classList.toggle('active')
+        //         characteristicsDescription[i].classList.toggle('active')
+        //     })
+        // })
+
+        const characteristicsListElem = document.querySelector('.characteristics__list')
+        const characteristicsItemElems= document.querySelectorAll('.characteristics__item')
+
+        const open = (button, dropdown) => {
+            closeAllDrops()
+            dropdown.style.height = `${dropdown.scrollHeight}px`
+            button.classList.add('active')
+            dropdown.classList.add('active')
+        }
+
+        const close = (button, dropdown) => {
+            button.classList.remove('active')
+            dropdown.classList.remove('active')
+            dropdown.style.height = '';
+        }
+
+        const closeAllDrops = (button, dropdown) => {
+            characteristicsItemElems.forEach((elem) => {
+                if(elem.children[0] !== button && elem.children[1] !== dropdown) {
+                    close(elem.children[0], elem.children[1])
+                }
+            })
+        }
+
+        characteristicsListElem.addEventListener('click', (e) => {
+            const target = e.target
+            if(target.classList.contains('characteristics__title')){
+                const parent = target.closest('.characteristics__item')
+                const description = parent.querySelector('.characteristics__description')
+                description.classList.contains('active') ? close(target, description) : open(target, description)
+            }
+        })
+
+        document.body.addEventListener('click', (e) => {
+            const target = e.target
+            if(!target.closest('.characteristics__list')){
+                closeAllDrops()
+            }
+        })
+
+        
+    }
+
+    const modal = () => {
+        const cardDetailsButtonBuy = document.querySelector('.card-details__button_buy')
+        const modal = document.querySelector('.modal')
+
+        cardDetailsButtonBuy.addEventListener('click', () => {
+            modal.classList.add('open')
+        })
+
+        modal.addEventListener('click', (e) => {
+            const target = e.target
+            if(target.classList.contains('modal__close')){
+                modal.classList.remove('open')
+            }
+            if(target === modal){
+                modal.classList.remove('open')
+            }
+            
+        })
+    }
+
     tabs()
+    accordion()
+    modal()
 })
