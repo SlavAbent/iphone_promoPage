@@ -1,6 +1,36 @@
 document.addEventListener('DOMContentLoaded', () => {
     'use strict';
 
+    const getData = (url, callback) => {
+        // const request = new XMLHttpRequest();
+        // request.open('GET', url);
+        // request.send();
+        // request.addEventListener('readystatechange', () => {
+        //     if(request.readyState !== 4) return;
+        //     if(request.status === 200) {
+        //         const response = JSON.parse(request.response);
+        //         callback(response);
+        //     } else {
+        //         console.error(new Error('Ошибка:' + request.status));
+                
+        //     }
+        // });
+        fetch(url)
+            .then((responce) => {
+                if(responce.ok){
+                    return responce.json()
+                }
+
+                throw new Error(responce.statusText)
+            })
+            .then(callback)
+            .catch((err) => {
+                console.log(err)
+            })
+    }
+
+    
+
     const tabs = () => {
         const cardDetailChangeElem = document.querySelectorAll('.card-detail__change')
         const cardDetailsTitleElem = document.querySelector('.card-details__title')
@@ -121,31 +151,78 @@ document.addEventListener('DOMContentLoaded', () => {
                 closeAllDrops()
             }
         })
-
-        
     }
 
     const modal = () => {
         const cardDetailsButtonBuy = document.querySelector('.card-details__button_buy')
+        const cardDetailsButtonDelivery = document.querySelector('.card-details__button_delivery')
         const modal = document.querySelector('.modal')
+        const cardDetailsTitle = document.querySelector('.card-details__title')
+        const modalTitle = modal.querySelector('.modal__title')
+        const modalSubtitle = modal.querySelector('.modal__subtitle')
+        const modalTitleSubmit = modal.querySelector('.modal__title-submit')
 
-        cardDetailsButtonBuy.addEventListener('click', () => {
+        const openModal = e => {
+            const target = e.target
             modal.classList.add('open')
-        })
+            document.addEventListener('keydown', escapeHandler)
+            modalTitle.textContent = cardDetailsTitle.textContent
+            modalTitleSubmit.value = cardDetailsTitle.textContent
+            modalSubtitle.textContent = target.dataset.buttonBuy
+        }
+        const closeModal = () => {
+            modal.classList.remove('open')
+            document.removeEventListener('keydown', escapeHandler)
+        }
+
+        const escapeHandler = e => {
+            if(e.code === 'Escape') {
+                closeModal()
+            }
+        }
 
         modal.addEventListener('click', (e) => {
             const target = e.target
-            if(target.classList.contains('modal__close')){
-                modal.classList.remove('open')
+            if(target.classList.contains('modal__close') || target === modal){
+                closeModal()
             }
-            if(target === modal){
-                modal.classList.remove('open')
-            }
-            
         })
+
+        cardDetailsButtonBuy.addEventListener('click', openModal)
+        cardDetailsButtonDelivery.addEventListener('click', closeModal)
+
+        
+    }
+
+    const renderCrossSell = () => {
+        const crossSellList  = document.querySelector('.cross-sell__list')
+        const createCrossSellItem = (good) => {
+            const {photo, name, price} = good
+            const liItem = document.createElement('li')
+            liItem.innerHTML = `
+                
+                <article class="cross-sell__item">
+                    <img class="cross-sell__image" src="${photo}" alt="">
+                    <h3 class="cross-sell__title">${name}</h3>
+                    <p class="cross-sell__price">${price}₽</p>
+                    <div class="button button_buy cross-sell__button">Купить</div>
+                </article>
+            `
+
+            return liItem
+        }
+        const createCrossSellList = (goods) => {
+            goods.forEach(item => {
+                crossSellList.append(createCrossSellItem(item))
+            })
+        }
+
+
+        getData('cross-sell-dbase/dbase.json', createCrossSellList)
     }
 
     tabs()
     accordion()
     modal()
+    renderCrossSell()
 })
