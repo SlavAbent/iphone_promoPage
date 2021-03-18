@@ -2,31 +2,30 @@ document.addEventListener('DOMContentLoaded', () => {
     'use strict';
 
     const getData = (url, callback) => {
-        // const request = new XMLHttpRequest();
-        // request.open('GET', url);
-        // request.send();
-        // request.addEventListener('readystatechange', () => {
-        //     if(request.readyState !== 4) return;
-        //     if(request.status === 200) {
-        //         const response = JSON.parse(request.response);
-        //         callback(response);
-        //     } else {
-        //         console.error(new Error('Ошибка:' + request.status));
-                
-        //     }
-        // });
-        fetch(url)
-            .then((responce) => {
-                if(responce.ok){
-                    return responce.json()
-                }
+        const request = new XMLHttpRequest();
+        request.open('GET', url);
+        request.send();
+        request.addEventListener('readystatechange', () => {
+            if(request.readyState !== 4) return;
+            if(request.status === 200) {
+                const response = JSON.parse(request.response);
+                callback(response);
+            } else {
+                console.error(new Error('Ошибка:' + request.status));
+                            }
+        });
+        // fetch(url)
+        //     .then((responce) => {
+        //         if(responce.ok){
+        //             return responce.json()
+        //         }
 
-                throw new Error(responce.statusText)
-            })
-            .then(callback)
-            .catch((err) => {
-                console.log(err)
-            })
+        //         throw new Error(responce.statusText)
+        //     })
+        //     .then(callback)
+        //     .catch((err) => {
+        //         console.log(err)
+        //     })
     }
 
     
@@ -77,9 +76,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             })
         })
-
-
-
 
         // const cardImageElems = document.querySelectorAll('.card__image')
 
@@ -190,19 +186,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         cardDetailsButtonBuy.addEventListener('click', openModal)
         cardDetailsButtonDelivery.addEventListener('click', closeModal)
-
-        
     }
 
     const renderCrossSell = () => {
+        
         const crossSellList  = document.querySelector('.cross-sell__list')
-        const createCrossSellItem = (good) => {
-            const {photo, name, price} = good
+        const crossSellAdd = document.querySelector('.cross-sell__add')
+        const shuffle = arr => arr.sort(() => Math.random() - 0.5)
+        const allGoods = []
+
+        const createCrossSellItem = ( {photo, name, price} ) => {
             const liItem = document.createElement('li')
             liItem.innerHTML = `
                 
                 <article class="cross-sell__item">
-                    <img class="cross-sell__image" src="${photo}" alt="">
+                    <img class="cross-sell__image" src="${photo}" alt="${name}">
                     <h3 class="cross-sell__title">${name}</h3>
                     <p class="cross-sell__price">${price}₽</p>
                     <div class="button button_buy cross-sell__button">Купить</div>
@@ -211,12 +209,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
             return liItem
         }
-        const createCrossSellList = (goods) => {
-            goods.forEach(item => {
-                crossSellList.append(createCrossSellItem(item))
+
+        const render = arr => {
+            arr.forEach(item => {
+                crossSellList.append(createCrossSellItem(item))   
             })
         }
 
+        const wrapper = (fn, count) => {
+            let counter = 0
+            return (...args) => {
+                if(counter === count) return;
+                counter++
+                return fn(...args)
+            }
+        } 
+
+        const wrapRender = wrapper(render, 2)
+
+        crossSellAdd.addEventListener('click', () => {
+            wrapRender(allGoods)
+            crossSellAdd.remove()
+        });
+
+        const createCrossSellList = (goods = []) => {
+            allGoods.push(...shuffle(goods))
+            const fourItems = allGoods.splice(0, 4)
+            wrapRender(fourItems)
+            
+        }
 
         getData('cross-sell-dbase/dbase.json', createCrossSellList)
     }
